@@ -2,6 +2,8 @@ node_modules/
 dist/
 .env
 .env.local
+# Photos of denied people. Never upload these.
+relay/data/
 *.log
 .DS_Store
 tsconfig.tsbuildinfo

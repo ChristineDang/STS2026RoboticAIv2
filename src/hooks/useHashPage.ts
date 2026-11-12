@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
-export type PageId = "overview" | "alerts" | "settings";
-const PAGES: PageId[] = ["overview", "alerts", "settings"];
+export type PageId = "overview" | "alerts" | "denied" | "settings";
+const PAGES: PageId[] = ["overview", "alerts", "denied", "settings"];
 
 function readPage(): PageId {
   const id = window.location.hash.replace(/^#\/?/, "");

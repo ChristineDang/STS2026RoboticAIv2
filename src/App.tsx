@@ -7,6 +7,7 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { useHashPage } from "./hooks/useHashPage";
 import { AlertLogPage } from "./pages/AlertLogPage";
 import { Dashboard } from "./pages/Dashboard";
+import { DeniedPeoplePage } from "./pages/DeniedPeoplePage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
           <AlertBanner />
           {page === "overview" && <Dashboard />}
           {page === "alerts" && <AlertLogPage />}
+          {page === "denied" && <DeniedPeoplePage />}
           {page === "settings" && <SettingsPage />}
         </main>
       </div>

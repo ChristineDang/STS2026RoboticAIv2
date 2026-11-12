@@ -3,6 +3,7 @@ import type { PageId } from "../../hooks/useHashPage";
 const NAV_ITEMS: { id: PageId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "alerts", label: "Alert log" },
+  { id: "denied", label: "Denied people" },
   { id: "settings", label: "Settings" },
 ];
 

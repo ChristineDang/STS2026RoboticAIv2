@@ -55,7 +55,7 @@ export function SecureCard({ id, label, children }: SecureCardProps) {
   } else {
     content = (
       <div
-        className={reopening ? "secure-card__content--reopening" : undefined}
+        className={`secure-card__content${reopening ? " secure-card__content--reopening" : ""}`}
         onAnimationEnd={() => setReopening(false)}
       >
         {children}

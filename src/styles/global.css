@@ -14,6 +14,7 @@
   --lid-muted: #b9c2cc;
   --skeleton: #e9ecef;
   --accent: #0b7a73;
+  --warn: #9a5b00;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -32,6 +33,7 @@
     --lid: #2a313a;
     --skeleton: #2a313a;
     --accent: #4fd1c5;
+    --warn: #ffb74d;
   }
 }
 
@@ -57,10 +59,24 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 .sidebar__link--active { background: var(--bg); font-weight: 600; }
 .sidebar__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.dashboard { display: flex; flex-direction: column; gap: 16px; }
+/* Overview layout: one grid system for every row. 1 column on phones, 2 on medium
+   widths, 4 on wide screens (sized to the dashboard's own width, not the window,
+   so the sidebar is accounted for). Cards in a row stretch to the same height. */
+.dashboard { display: flex; flex-direction: column; gap: 16px; container-type: inline-size; }
 .dashboard__header { display: flex; justify-content: space-between; align-items: center; }
 .dashboard__header h2 { font-size: 16px; margin: 0; }
-.dashboard__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; }
+.dashboard__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.dashboard__wide > * { height: 100%; }
+@container (min-width: 560px) {
+  .dashboard__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard__wide { grid-column: span 2; }
+}
+@container (min-width: 1000px) {
+  .dashboard__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.dashboard__section { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
+.dashboard__section .dashboard__subheading { margin: 0; }
+.dashboard__section-note { font-size: 12px; color: var(--muted); }
 
 .connection-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
 .connection-badge__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
@@ -68,7 +84,7 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 .connection-badge--disconnected .connection-badge__dot { background: var(--error); }
 
 .stat-card__empty { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
-.usage-list { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--border); }
+.usage-list { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--border); max-height: 200px; overflow-y: auto; }
 .usage-list__row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
 .usage-list__count { font-weight: 600; font-variant-numeric: tabular-nums; }
 
@@ -76,6 +92,8 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 .stat-card__label { font-size: 13px; color: var(--muted); }
 .stat-card__value { font-size: 28px; font-weight: 600; margin-top: 4px; }
 .stat-card__unit { font-size: 14px; color: var(--muted); }
+.stat-card__value--text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-card__meta { font-size: 13px; color: var(--muted); margin: 6px 0 0; font-variant-numeric: tabular-nums; }
 
 .error { color: var(--error); }
 
@@ -92,6 +110,7 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 }
 .button:hover { background: var(--bg); }
 .button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.button--link { display: inline-flex; align-items: center; text-decoration: none; }
 
 .settings { display: grid; gap: 16px; max-width: 680px; }
 .settings__title { margin: 0 0 4px; font-size: 15px; }
@@ -135,8 +154,93 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 .alert-list__status--verified { color: var(--live); }
 .alert-list__status--operator { color: var(--muted); font-weight: 400; }
 
+/* ---- Robot camera ---------------------------------------------------------- */
+.camera { display: flex; flex-direction: column; gap: 10px; }
+.camera--alert { border-color: var(--alert); box-shadow: 0 0 0 2px var(--alert); }
+.camera__alert-text { color: var(--alert-text); font-weight: 600; }
+.camera__frame {
+  position: relative; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden;
+  background: #0d1014; display: flex; align-items: center; justify-content: center;
+}
+.camera__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.camera__img--waiting { visibility: hidden; position: absolute; }
+.camera__message { position: absolute; padding: 16px; color: #c9d1d9; font-size: 14px; text-align: center; }
+.camera__controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.button:disabled { opacity: 0.5; cursor: default; }
+
+/* ---- Denied people ---------------------------------------------------------- */
+.denied-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.denied-card { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+.denied-card__photo { display: block; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; background: #0d1014; }
+.denied-card__photo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.denied-card__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.denied-card__time { font-size: 14px; font-weight: 600; }
+.denied-card__meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.denied-card__delete { align-self: flex-start; }
+
+/* ---- System health --------------------------------------------------------- */
+.dashboard__subheading { font-size: 15px; margin: 8px 0 0; }
+.health-card { display: flex; flex-direction: column; gap: 10px; }
+.health-card__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.health-card__title { font-size: 15px; font-weight: 600; }
+.health-card__subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.health-card__rows { margin: 0; border-top: 1px solid var(--border); }
+.health-card__row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.health-card__row dt { color: var(--muted); }
+.health-card__row dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; overflow-wrap: anywhere; }
+.health-card__note { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.health-card__count { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Pinned to the bottom so footers line up across cards of different content. */
+.health-card__footer { margin-top: auto; display: flex; gap: 8px; }
+.health-card__rows--footer { margin-top: auto; }
+.health-card > .alert-list, .health-card > .stat-card__empty { margin-top: 0; }
+
+.health-badge { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.health-badge__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.health-badge--ok { color: var(--live); }
+.health-badge--ok .health-badge__dot { background: var(--live); }
+.health-badge--warn { color: var(--warn); }
+.health-badge--warn .health-badge__dot { background: var(--warn); border-radius: 2px; }
+.health-badge--bad { color: var(--error); }
+.health-badge--bad .health-badge__dot { background: var(--error); border-radius: 0; transform: rotate(45deg); }
+.health-badge--unknown { color: var(--muted); }
+.health-badge--unknown .health-badge__dot { background: none; border: 2px solid var(--muted); width: 8px; height: 8px; }
+
+.robot-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.robot-list__row { padding: 7px 0; border-bottom: 1px solid var(--border); }
+.robot-list__top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.robot-list__name { font-size: 14px; font-weight: 600; }
+.robot-list__details { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Latency sparkline (one per arm). The SVG stretches to the card; strokes and dots keep their size. */
+.sparkline { margin-top: 8px; }
+.sparkline__plot { position: relative; height: 40px; cursor: crosshair; border-radius: 4px; }
+.sparkline__plot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.sparkline__plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.sparkline__plot line, .sparkline__plot polyline { vector-effect: non-scaling-stroke; fill: none; }
+.sparkline__baseline { stroke: var(--border); stroke-width: 1; }
+.sparkline__threshold { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
+.sparkline__line { stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.sparkline__crosshair { stroke: var(--muted); stroke-width: 1; }
+.sparkline__dot {
+  position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: var(--accent); box-shadow: 0 0 0 2px var(--surface); pointer-events: none;
+}
+.sparkline__tooltip {
+  position: absolute; bottom: calc(100% + 6px); transform: translateX(8px); z-index: 2; pointer-events: none;
+  display: flex; flex-direction: column; padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(27, 31, 36, 0.12);
+  font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.sparkline__tooltip strong { color: var(--text); font-size: 13px; }
+.sparkline__tooltip--left { transform: translateX(calc(-100% - 8px)); }
+.sparkline__stats { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sparkline__empty { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
 /* ---- Secure cards ----------------------------------------------------------- */
 .secure-card { perspective: 800px; }
+/* Fill the grid cell, so closed, hidden and open cards keep the row's height. */
+.secure-card > *, .secure-card__content > * { height: 100%; }
 .secure-card__lid {
   min-height: 116px; padding: 16px; border-radius: 8px; background: var(--lid); color: var(--lid-text);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;

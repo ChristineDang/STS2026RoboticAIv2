@@ -1,0 +1,19 @@
+{
+  "_comment": "How backend messages say who was verified or denied. Read by BOTH the dashboard (src/services/feedTranslator.ts) and the relay (relay/server.mjs, to save photos of denied people). Edit here when the backend format is confirmed. Values are matched lower-case, with spaces and dashes turned into _.",
+
+  "authFields": ["auth", "authorized", "authorised", "authenticated", "verified", "auth_status", "authStatus"],
+  "authYes": ["yes", "y", "true", "1", "verified", "authorized", "authorised", "approved", "allowed", "allow", "granted", "pass"],
+  "authNo": ["no", "n", "false", "0", "unverified", "unauthorized", "unauthorised", "denied", "deny", "rejected", "fail", "intruder", "unknown"],
+
+  "typeFields": ["type", "event", "kind"],
+  "authTypes": ["auth", "authentication", "authorization", "verification"],
+  "typedValueFields": ["value", "result", "status", "state"],
+
+  "deniedEventNames": ["unverified_person", "unknown_person", "intruder", "auth_failed"],
+  "verifiedEventNames": ["verified_person", "verified_person_returned", "auth_ok"],
+
+  "wrapperFields": ["data", "payload", "body", "metrics"],
+
+  "imageFields": ["image", "image_base64", "snapshot", "frame", "photo"],
+  "imageUrlFields": ["image_url", "snapshot_url", "frame_url", "photo_url"]
+}

@@ -18,7 +18,11 @@ import {
 import { useAlert } from "./AlertContext";
 
 const STAGGER_MS = 220;
-const FALLBACK_MS = 6000;
+/**
+ * Long enough for Iris to walk to all eight cards (about 1 s each). Card data is
+ * already hidden the moment the alert starts; this only closes the lids.
+ */
+const FALLBACK_MS = 12_000;
 
 export interface RegisteredCard {
   id: string;

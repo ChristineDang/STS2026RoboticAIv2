@@ -14,14 +14,28 @@ function status(entry: AlertLogEntry): { text: string; kind: "active" | "verifie
   }
 }
 
+interface RecentAlertsProps {
+  limit?: number;
+  title?: string;
+  /** Adds a link to the full alert log at the bottom of the card. */
+  showLogLink?: boolean;
+}
+
 /** Alert history for this session. Holds times and outcomes only, so it stays visible during an alert. */
-export function RecentAlerts({ limit, title = "Recent alerts" }: { limit?: number; title?: string }) {
+export function RecentAlerts({ limit, title = "Recent alerts", showLogLink = false }: RecentAlertsProps) {
   const { state } = useAlert();
   const entries = limit ? state.log.slice(0, limit) : state.log;
+  const hidden = state.log.length - entries.length;
 
   return (
-    <div className="stat-card">
-      <div className="stat-card__label">{title}</div>
+    <div className="stat-card health-card">
+      <div className="health-card__header">
+        <div>
+          <div className="health-card__title">{title}</div>
+          <div className="health-card__subtitle">Since this page was opened</div>
+        </div>
+        <span className="health-card__count">{state.log.length === 1 ? "1 alert" : `${state.log.length} alerts`}</span>
+      </div>
       {entries.length === 0 ? (
         <p className="stat-card__empty">No alerts since this page was opened</p>
       ) : (
@@ -36,6 +50,13 @@ export function RecentAlerts({ limit, title = "Recent alerts" }: { limit?: numbe
             );
           })}
         </ul>
+      )}
+      {showLogLink && (
+        <div className="health-card__footer">
+          <a className="button button--link" href="#/alerts">
+            {hidden > 0 ? `Open alert log (${hidden} more)` : "Open alert log"}
+          </a>
+        </div>
       )}
     </div>
   );
