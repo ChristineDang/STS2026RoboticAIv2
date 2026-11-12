@@ -77,6 +77,11 @@ function Gripper({ transform }: { transform: string }) {
   );
 }
 
+/**
+ * One leg, in two parts so it can step: the whole leg lifts from the hip, and
+ * the lower leg (shin + foot) folds up from the knee. See the iris-lift / iris-knee
+ * animations in global.css.
+ */
 function Leg({ side }: { side: "left" | "right" }) {
   const hipX = side === "left" ? 84 : 116;
   const kneeX = side === "left" ? 80 : 120;
@@ -84,9 +89,11 @@ function Leg({ side }: { side: "left" | "right" }) {
   return (
     <g className={`iris-leg iris-leg--${side}`}>
       <Limb x1={hipX} y1={212} x2={kneeX} y2={234} width={11} />
-      <Limb x1={kneeX} y1={234} x2={hipX} y2={254} width={9} />
+      <g className={`iris-shin iris-shin--${side}`}>
+        <Limb x1={kneeX} y1={234} x2={hipX} y2={254} width={9} />
+        <rect x={footX} y={251} width={32} height={11} rx={5.5} fill={JOINT} />
+      </g>
       <circle cx={kneeX} cy={234} r={6} fill={JOINT} />
-      <rect x={footX} y={251} width={32} height={11} rx={5.5} fill={JOINT} />
       <circle cx={hipX} cy={212} r={6} fill={JOINT} />
     </g>
   );
@@ -99,9 +106,14 @@ interface IrisFigureProps {
   /** Overrides the mood's arm pose (raised while pushing a card shut). */
   armUp?: boolean;
   walking?: boolean;
+  /** Which way Iris is walking; it leans that way slightly. */
+  facing?: "left" | "right";
 }
 
-export function IrisFigure({ mood, blinking = false, armUp, walking = false }: IrisFigureProps) {
+/** How far Iris leans into the direction it walks. */
+const WALK_LEAN_DEG = 5;
+
+export function IrisFigure({ mood, blinking = false, armUp, walking = false, facing = "right" }: IrisFigureProps) {
   const look = LOOKS[mood];
   const raised = armUp ?? look.wave;
   const lens = useMemo(() => aperture(blinking ? 0 : look.aperture, look.bladeTurn), [blinking, look]);
@@ -109,6 +121,7 @@ export function IrisFigure({ mood, blinking = false, armUp, walking = false }: I
   const arm = raised
     ? { x: 163, y: 134, grip: "translate(163 134) rotate(200)" }
     : { x: 156, y: 198, grip: "translate(156 198) rotate(-20)" };
+  const lean = walking ? (facing === "left" ? -WALK_LEAN_DEG : WALK_LEAN_DEG) : 0;
 
   return (
     <svg
@@ -118,15 +131,21 @@ export function IrisFigure({ mood, blinking = false, armUp, walking = false }: I
       focusable="false"
     >
       <ellipse cx="100" cy="264" rx="54" ry="5" fill="#1b1f24" opacity="0.12" />
+      <g className="iris-lean" style={{ transform: `rotate(${lean}deg)` }}>
       <g className="iris-bob">
         <g className="iris-shift" style={{ transform: `translateY(${look.dy}px)` }}>
           <Leg side="left" />
           <Leg side="right" />
 
-          <Limb x1={60} y1={166} x2={44} y2={198} width={10} />
-          <Gripper transform="translate(44 198) rotate(20)" />
-          <Limb x1={140} y1={166} x2={arm.x} y2={arm.y} width={10} />
-          <Gripper transform={arm.grip} />
+          <g className="iris-arm iris-arm--left">
+            <Limb x1={60} y1={166} x2={44} y2={198} width={10} />
+            <Gripper transform="translate(44 198) rotate(20)" />
+          </g>
+          {/* The right arm only swings while hanging down, not while raised to push a card. */}
+          <g className={raised ? undefined : "iris-arm iris-arm--right"}>
+            <Limb x1={140} y1={166} x2={arm.x} y2={arm.y} width={10} />
+            <Gripper transform={arm.grip} />
+          </g>
 
           <rect x="60" y="150" width="80" height="62" rx="22" fill={SHELL} stroke={OUTLINE} strokeWidth="2" />
           <circle cx="60" cy="166" r="7" fill={JOINT} />
@@ -159,6 +178,7 @@ export function IrisFigure({ mood, blinking = false, armUp, walking = false }: I
             <circle cx="111" cy="104" r="2.2" fill="#ffffff" opacity="0.5" />
           </g>
         </g>
+      </g>
       </g>
     </svg>
   );

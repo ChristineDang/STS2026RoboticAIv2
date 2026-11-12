@@ -288,26 +288,67 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 }
 .iris__control:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.iris-head, .iris-shift, .iris-leg { transform-box: view-box; }
+/* Pivot points are in the figure's own 200×270 drawing units. */
+.iris-head, .iris-shift, .iris-leg, .iris-shin, .iris-arm, .iris-lean, .iris-bob { transform-box: view-box; }
 .iris-head { transform-origin: 100px 146px; transition: transform 0.3s ease; }
 .iris-shift { transition: transform 0.3s ease; }
 .iris-ring { transition: stroke 0.3s; }
 .iris-light { transition: fill 0.3s; }
-.iris-bob { animation: iris-idle 2.6s ease-in-out infinite; }
-.iris-figure--walking .iris-bob { animation: iris-step 0.32s ease-in-out infinite; }
+.iris-lean { transform-origin: 100px 262px; transition: transform 0.2s ease-out; }
+.iris-bob { transform-origin: 100px 262px; animation: iris-idle 2.6s ease-in-out infinite; }
 .iris-leg--left { transform-origin: 84px 212px; }
 .iris-leg--right { transform-origin: 116px 212px; }
-.iris-figure--walking .iris-leg--left { animation: iris-leg 0.32s ease-in-out infinite alternate; }
-.iris-figure--walking .iris-leg--right { animation: iris-leg 0.32s ease-in-out infinite alternate-reverse; }
+.iris-shin--left { transform-origin: 80px 234px; }
+.iris-shin--right { transform-origin: 120px 234px; }
+.iris-arm--left { transform-origin: 60px 166px; }
+.iris-arm--right { transform-origin: 140px 166px; }
 @keyframes iris-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes iris-step { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes iris-leg { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+/*
+ * Walking: one step cycle is 0.4 s. The left foot lifts in the first half and
+ * the right foot in the second; the body sways onto the planted foot, dips as
+ * each foot lands, and the arms swing with it. Iris faces the viewer, so the
+ * steps lift and splay slightly outward rather than swinging front-to-back.
+ */
+.iris-figure--walking .iris-bob { animation: iris-sway 0.4s ease-in-out infinite; }
+.iris-figure--walking .iris-leg--left { animation: iris-lift-left 0.4s ease-in-out infinite; }
+.iris-figure--walking .iris-leg--right { animation: iris-lift-right 0.4s ease-in-out infinite; }
+.iris-figure--walking .iris-shin--left { animation: iris-knee-left 0.4s ease-in-out infinite; }
+.iris-figure--walking .iris-shin--right { animation: iris-knee-right 0.4s ease-in-out infinite; }
+.iris-figure--walking .iris-arm { animation: iris-arm-swing 0.4s ease-in-out infinite; }
+
+@keyframes iris-sway {
+  0%, 50%, 100% { transform: translateY(1px); }
+  25% { transform: translateY(-2px) rotate(2.5deg); }
+  75% { transform: translateY(-2px) rotate(-2.5deg); }
+}
+@keyframes iris-lift-left {
+  0%, 50%, 100% { transform: none; }
+  25% { transform: translateY(-8px) rotate(5deg); }
+}
+@keyframes iris-lift-right {
+  0%, 50%, 100% { transform: none; }
+  75% { transform: translateY(-8px) rotate(-5deg); }
+}
+@keyframes iris-knee-left {
+  0%, 50%, 100% { transform: none; }
+  25% { transform: scaleY(0.8); }
+}
+@keyframes iris-knee-right {
+  0%, 50%, 100% { transform: none; }
+  75% { transform: scaleY(0.8); }
+}
+@keyframes iris-arm-swing {
+  0%, 50%, 100% { transform: none; }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .alert-overlay--pulsing { animation: none; opacity: 0.85; }
   .secure-card__lid, .secure-card__content--reopening, .iris__bubble { animation: none; }
-  .iris-bob, .iris-leg { animation: none !important; }
-  .iris, .iris-head, .iris-shift { transition: none !important; }
+  .iris-bob, .iris-leg, .iris-shin, .iris-arm { animation: none !important; }
+  .iris, .iris-head, .iris-shift, .iris-lean { transition: none !important; }
 }
 
 @media (max-width: 640px) {

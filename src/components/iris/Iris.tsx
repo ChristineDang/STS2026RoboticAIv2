@@ -81,6 +81,7 @@ function IrisBot() {
   const [target, setTarget] = useState<Point | null>(null);
   const [walkMs, setWalkMs] = useState(0);
   const [walking, setWalking] = useState(false);
+  const [facing, setFacing] = useState<"left" | "right">("left");
   const [reaching, setReaching] = useState(false);
 
   const home = useHomePosition();
@@ -105,7 +106,9 @@ function IrisBot() {
     const walkTo = async (point: Point | null) => {
       const from = positionRef.current;
       const to = point ?? homePosition();
-      const ms = clamp(Math.hypot(to.x - from.x, to.y - from.y) * 0.9, 250, 800);
+      // At least one full step cycle (0.4 s), so even a short hop reads as walking.
+      const ms = clamp(Math.hypot(to.x - from.x, to.y - from.y) * 0.9, 400, 900);
+      if (Math.abs(to.x - from.x) > 4) setFacing(to.x < from.x ? "left" : "right");
       setWalkMs(ms);
       setWalking(true);
       setTarget(point);
@@ -166,7 +169,7 @@ function IrisBot() {
         onClick={sayStatus}
         aria-label="Iris, the dashboard robot. Click for a status update."
       >
-        <IrisFigure mood={mood} blinking={blinking} armUp={reaching || undefined} walking={walking} />
+        <IrisFigure mood={mood} blinking={blinking} armUp={reaching || undefined} walking={walking} facing={facing} />
       </button>
 
       <div className="iris__controls">
